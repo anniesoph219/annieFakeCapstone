@@ -9,6 +9,9 @@ import MenuItem from "@material-ui/core/MenuItem";
 import SwipeableDrawer from "@material-ui/core/SwipeableDrawer";
 import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
+import List from "@material-ui/core/List";
+import ListItem from "@material-ui/core/ListItem";
+import ListItemText from "@material-ui/core/ListItemText";
 import { Link } from "react-router-dom";
 import useScrollTrigger from "@material-ui/core/useScrollTrigger";
 import { makeStyles } from "@material-ui/styles";
@@ -103,6 +106,17 @@ const useStyles = makeStyles((theme) => ({
     },
     color: "#fff100",
   },
+  drawer: {
+    backgroundColor: theme.palette.common.pink,
+  },
+  drawerItem: {
+    ...theme.typography.tab,
+    color: "#fff100",
+    opacity: 0.7,
+  },
+  drawerItemSelected: {
+    opacity: 1,
+  },
 }));
 
 export default function Header(props) {
@@ -138,21 +152,50 @@ export default function Header(props) {
   };
 
   const menuOptions = [
-    { name: "Create Meal", link: "/createmeal" },
-    { name: "Browse Meal Outings", link: "/browse" },
-    { name: "Host Meal Outing", link: "/host" },
+    {
+      name: "Create Meal",
+      link: "/createmeal",
+      activeIndex: 1,
+      selectedIndex: 0,
+    },
+    {
+      name: "Browse Meal Outings",
+      link: "/browse",
+      activeIndex: 1,
+      selectedIndex: 1,
+    },
+    {
+      name: "Host Meal Outing",
+      link: "/host",
+      activeIndex: 1,
+      selectedIndex: 2,
+    },
+  ];
+
+  const routes = [
+    { name: "Home", link: "/", activeIndex: 0 },
+    { name: "Create Meal", link: "/createmeal", activeIndex: 1 },
+    { name: "Login", link: "/login", activeIndex: 2 },
+    { name: "Signup", link: "/signup", activeIndex: 3 },
   ];
 
   useEffect(() => {
-    if (window.location.pathname === "/" && value !== 0) {
-      setValue(0);
-    } else if (window.location.pathname === "/createmeal" && value !== 1) {
-      setValue(1);
-    } else if (window.location.pathname === "/login" && value !== 2) {
-      setValue(2);
-    } else if (window.location.pathname === "/signup" && value !== 3) {
-      setValue(3);
-    }
+    [...menuOptions, ...routes].forEach((route) => {
+      switch (window.location.pathname) {
+        case `${route.link}`:
+          if (value !== route.activeIndex) {
+            setValue(route.activeIndex);
+            if (route.selectedIndex && route.selectedIndex !== selectedIndex) {
+              setSelectedIndex(route.selectedIndex);
+            }
+          }
+          break;
+        default:
+          break;
+      }
+    });
+
+    /*
     switch (window.location.pathname) {
       case "/": {
         if (value !== 0) {
@@ -195,8 +238,8 @@ export default function Header(props) {
       }
       default:
         break;
-    }
-  }, [value]);
+    }*/
+  }, [value, menuOptions, selectedIndex, routes]);
 
   const tabs = (
     <React.Fragment>
@@ -303,13 +346,103 @@ export default function Header(props) {
   const drawer = (
     <React.Fragment>
       <SwipeableDrawer
+        classes={{ paper: classes.drawer }}
         disableBackdropTransition={!iOS}
         disableDiscovery={iOS}
         open={openDrawer}
         onClose={() => setOpenDrawer(false)}
         onOopen={() => setOpenDrawer(true)}
       >
-        Example Drawer
+        <List disablePadding>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(0);
+            }}
+            divider
+            button
+            component={Link}
+            to="/"
+            selected={value === 0}
+          >
+            <ListItemText
+              className={
+                value === 0
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              Home
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(1);
+            }}
+            divider
+            button
+            component={Link}
+            to="/createmeal"
+            selected={value === 1}
+          >
+            <ListItemText
+              className={
+                value === 1
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              Create Meal
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(2);
+            }}
+            divider
+            button
+            component={Link}
+            to="/login"
+            selected={value === 2}
+          >
+            <ListItemText
+              className={
+                value === 2
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              Login
+            </ListItemText>
+          </ListItem>
+          <ListItem
+            onClick={() => {
+              setOpenDrawer(false);
+              setValue(3);
+            }}
+            divider
+            button
+            component={Link}
+            to="/signup"
+            selected={value === 3}
+          >
+            <ListItemText
+              className={
+                value === 3
+                  ? [classes.drawerItem, classes.drawerItemSelected]
+                  : classes.drawerItem
+              }
+              disableTypography
+            >
+              SignUp
+            </ListItemText>
+          </ListItem>
+        </List>
       </SwipeableDrawer>
       <IconButton
         className={classes.drawerIconContainer}
