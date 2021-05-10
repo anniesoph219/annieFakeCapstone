@@ -115,7 +115,12 @@ const useStyles = makeStyles((theme) => ({
     opacity: 0.7,
   },
   drawerItemSelected: {
-    opacity: 1,
+    "& .MuiListItemText-route": {
+      opacity: 1,
+    },
+  },
+  appBar: {
+    zIndex: theme.zIndex.modal + 1, //modal component is used underneath temporary drawer
   },
 }));
 
@@ -174,7 +179,14 @@ export default function Header(props) {
 
   const routes = [
     { name: "Home", link: "/", activeIndex: 0 },
-    { name: "Create Meal", link: "/createmeal", activeIndex: 1 },
+    {
+      name: "Create Meal",
+      link: "/createmeal",
+      activeIndex: 1,
+      ariaOwns: anchorEl ? "simple-menu" : undefined,
+      ariaPopup: anchorEl ? "true" : undefined,
+      mouseOver: (event) => handleClick(event),
+    },
     { name: "Login", link: "/login", activeIndex: 2 },
     { name: "Signup", link: "/signup", activeIndex: 3 },
   ];
@@ -194,51 +206,6 @@ export default function Header(props) {
           break;
       }
     });
-
-    /*
-    switch (window.location.pathname) {
-      case "/": {
-        if (value !== 0) {
-          setValue(0);
-        }
-        break;
-      }
-      case "/createmeal": {
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(0);
-        }
-        break;
-      }
-      case "/browse": {
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(1);
-        }
-        break;
-      }
-      case "/host": {
-        if (value !== 1) {
-          setValue(1);
-          setSelectedIndex(2);
-        }
-        break;
-      }
-      case "/login": {
-        if (value !== 2) {
-          setValue(2);
-        }
-        break;
-      }
-      case "/signup": {
-        if (value !== 3) {
-          setValue(3);
-        }
-        break;
-      }
-      default:
-        break;
-    }*/
   }, [value, menuOptions, selectedIndex, routes]);
 
   const tabs = (
@@ -249,28 +216,18 @@ export default function Header(props) {
         className={classes.tabContainer}
         indicatorColor="secondary"
       >
-        <Tab className={classes.tab} component={Link} to="/" label="Home" />
-        <Tab
-          aria-owns={anchorEl ? "simple-menu" : undefined}
-          aria-haspopup={anchorEl ? "true" : undefined}
-          onMouseOver={(event) => handleClick(event)}
-          className={classes.tab}
-          component={Link}
-          to="/createmeal"
-          label="Create Meal"
-        />
-        <Tab
-          className={classes.tab}
-          component={Link}
-          to="/login"
-          label="Login"
-        />
-        <Tab
-          className={classes.tab}
-          component={Link}
-          to="/signup"
-          label="SignUp"
-        />
+        {routes.map((route, index) => (
+          <Tab
+            key={`${route}${index}`}
+            className={classes.tab}
+            component={Link}
+            to={route.link}
+            label={route.name}
+            aria-owns={route.ariaOwns}
+            aria-haspopup={route.ariaPopup}
+            onMouseOver={route.mouseOver}
+          />
+        ))}
       </Tabs>
       {/* <Button
               variant="contained"
@@ -287,10 +244,12 @@ export default function Header(props) {
         onClose={handleClose}
         MenuListProps={{ onMouseLeave: handleClose }}
         elevation={0}
+        keepMounted
+        style={{ zIndex: 1302 }}
       >
         {menuOptions.map((option, i) => (
           <MenuItem
-            key={option}
+            key={`${option}${i}`}
             component={Link}
             to={option.link}
             classes={{ root: classes.menuItem }}
@@ -353,7 +312,29 @@ export default function Header(props) {
         onClose={() => setOpenDrawer(false)}
         onOopen={() => setOpenDrawer(true)}
       >
+        <div className={classes.toolbarMargin} />
         <List disablePadding>
+          {routes.map((route) => (
+            <ListItem
+              key={`${route}${route.activeIndex}`}
+              divider
+              button
+              component={Link}
+              to={route.link}
+              selected={value === route.activeIndex}
+              classes={{ selected: classes.drawerItemSelected }}
+              onClick={() => {
+                setOpenDrawer(false);
+                setValue(route.activeIndex);
+              }}
+            >
+              <ListItemText className={classes.drawerItem} disableTypography>
+                {route.name}
+              </ListItemText>
+            </ListItem>
+          ))}
+
+          {/*
           <ListItem
             onClick={() => {
               setOpenDrawer(false);
@@ -442,6 +423,7 @@ export default function Header(props) {
               SignUp
             </ListItemText>
           </ListItem>
+            */}
         </List>
       </SwipeableDrawer>
       <IconButton
@@ -457,7 +439,7 @@ export default function Header(props) {
   return (
     <React.Fragment>
       <ElevationScroll>
-        <AppBar position="fixed" color="primary">
+        <AppBar classeName={classes.appBar} position="fixed" color="primary">
           <Toolbar disableGutters>
             <Button
               component={Link}
